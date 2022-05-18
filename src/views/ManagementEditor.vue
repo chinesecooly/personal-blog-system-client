@@ -1,9 +1,9 @@
 <template>
     <div>
         <v-toolbar dense light class="mt-1">
-            <v-btn class="mr-3 ml-1" to="/home" text rounded outlined color="grep">
+            <v-btn class="mr-3 ml-1" to="/management" text rounded outlined color="grep">
                 <v-icon large>mdi-arrow-left-thin</v-icon>
-                返回首页
+                文章管理
             </v-btn>
             <v-text-field v-model="articleTitle" placeholder="请输入文章标题（5~50个字）" rounded filled dense class="mt-6"
                 outlined :suffix="titleSuffix" color="grep" :error="titleError" autofocus @blur="blur()"
@@ -15,7 +15,8 @@
         <v-divider></v-divider>
 
         <mavon-editor id="editor" v-model="articleBody" @imgAdd="$imgAdd" @imgDel="$imgDel" ref="md"
-            previewBackground="#F5F5F5" fontSize="17px" codeStyle="atom-one-dark" :toolbars="toolbars"></mavon-editor>
+            previewBackground="#F5F5F5" fontSize="17px" codeStyle="atom-one-dark" :toolbars="toolbars">
+        </mavon-editor>
 
         <v-toolbar height="20" dense absolute bottom width="100%">
             <v-btn text class="ml-n3" small>markdown</v-btn>
@@ -35,12 +36,13 @@
         data() {
             return {
                 id: '',
-                articleBody: '@[TOC](文章目录) \n',
+                articleBody: '',
                 articleTitle: '',
                 titleError: false,
-                isDraft: false,
+                isSave: false,
                 dialog: false,
                 url: '',
+                isDraft: 0,
                 tags: [],
                 categories: [],
                 description: '',
@@ -135,6 +137,7 @@
                 })
             },
             $imgDel(pos) {
+
                 this.$http.get(
                     '/image/removeImage' + '/' + pos[0].substr(pos[0].lastIndexOf('/') + 1)
                 )
@@ -146,117 +149,44 @@
                 this.dialog = !this.dialog
             },
             savedraft() {
-                if (this.id == '') {
-                    this.$axios({
-                        method: 'post',
-                        url: '/article/saveMd',
-                        data: {
-                            articleBody: this.articleBody
-                        }
-                    }).then((response) => {
-                        this.url = response.data.data;
-                        if (response.data.code == "SUCCESS") {
-                            this.description = this.$refs.pc.description;
-                            this.$http.get(
-                                '/article/saveArticle', {
-                                    title: this.articleTitle,
-                                    url: this.url,
-                                    description: this.description,
-                                    isDraft: 1
-                                },
-                                null
-                            ).then((response) => {
-                                if (response.data.code == "SUCCESS") {
-                                    this.id = response.data.data;
-                                    this.isDraft = 1;
-                                    this.$refs.pc.loading = false;
-                                    this.$store.commit('successBlogAlter', '保存成功')
-                                } else {
-                                    this.$store.commit('failedBlogAlter', '保存失败')
-                                }
-                            })
-                        } else {
-                            this.$store.commit('failedBlogAlter', '保存失败');
-                        }
-                    })
-                } else {
-                    this.$axios({
-                        method: 'post',
-                        url: '/article/saveMdByURL',
-                        params: {
-                            url: this.url
-                        },
-                        data: {
-                            articleBody: this.articleBody
-                        }
-                    }).then((response) => {
-                        if (response.data.code == "SUCCESS") {
-                            this.$store.commit('successBlogAlter', '保存成功');
-                        } else {
-                            this.$store.commit('failedBlogAlter', '保存失败');
-                        }
-                    })
-                }
-            },
-            saveMd() {
-                if (this.id == '') {
-                    this.$axios({
-                        method: 'post',
-                        url: '/article/saveMd',
-                        data: {
-                            articleBody: this.articleBody
-                        }
-                    }).then((response) => {
-                        this.url = response.data.data;
-                        if (response.data.code == "SUCCESS") {
-                            this.saveArticle();
-                        } else {
-                            this.$store.commit('failedBlogAlter', response.data.msg);
-                        }
-                    })
-                } else {
-                    this.$axios({
-                        method: 'post',
-                        url: '/article/saveMdByURL',
-                        params: {
-                            url: this.url
-                        },
-                        data: {
-                            articleBody: this.articleBody
-                        }
-                    }).then((response) => {
-                        if (response.data.code == "SUCCESS") {
-                            this.publishDraft()
-                        } else {
-                            this.$store.commit('failedBlogAlter', response.data.msg);
-                        }
-                    })
-                }
-            },
-            saveArticle() {
-                this.description = this.$refs.pc.description;
-                this.$http.get(
-                    '/article/saveArticle', {
-                        title: this.articleTitle,
-                        url: this.url,
-                        description: this.description
+                this.$axios({
+                    method: 'post',
+                    url: '/article/saveMdByURL',
+                    params: {
+                        url: this.url
                     },
-                    null
-                ).then((response) => {
+                    data: {
+                        articleBody: this.articleBody
+                    }
+                }).then((response) => {
                     if (response.data.code == "SUCCESS") {
-                        this.id = response.data.data;
-                        this.savetag();
-                        this.saveCategory();
-                        this.$refs.pc.loading = false;
-                        this.$store.commit('successBlogAlter', response.data.msg)
-                        this.dialog = !this.dialog;
+                        this.$store.commit('successBlogAlter', response.data.msg);
                     } else {
-                        this.$store.commit('failedBlogAlter', response.data.msg)
+                        this.$store.commit('failedBlogAlter', response.data.msg);
                     }
                 })
+
+            },
+            saveMd() {
+                this.$axios({
+                    method: 'post',
+                    url: '/article/saveMdByURL',
+                    params: {
+                        url: this.url
+                    },
+                    data: {
+                        articleBody: this.articleBody
+                    }
+                }).then((response) => {
+                    if (response.data.code == "SUCCESS") {
+                        this.publishDraft()
+                    } else {
+                        this.$store.commit('failedBlogAlter', response.data.msg);
+                    }
+                })
+
             },
             publishDraft() {
-                this.description = this.$refs.pc.description;
                 this.$http.get(
                     '/article/publishDraft', {
                         id: this.id
@@ -264,9 +194,9 @@
                     null
                 ).then((response) => {
                     if (response.data.code == "SUCCESS") {
+                        this.saveDescription()
                         this.savetag();
                         this.saveCategory();
-                        this.saveDescription();
                         this.$refs.pc.loading = false;
                         this.$store.commit('successBlogAlter', response.data.msg)
                         this.dialog = !this.dialog;
@@ -305,12 +235,38 @@
                 this.description = this.$refs.pc.description;
                 this.$http.get(
                     '/article/saveDescription', {
-                        articleId: this.id,
+                        id: this.id,
                         description: this.description
                     },
                     null
                 )
+            },
+            $click() {
+
             }
+        },
+        mounted() {
+            this.id = this.$route.params.id;
+            this.$http.get(
+                '/article/articleInfo', {
+                    articleId: this.id
+                },
+                null
+            ).then((response) => {
+                this.articleTitle = response.data.data.title;
+                this.url = response.data.data.url;
+                this.isDraft = response.data.data.isDraft;
+            });
+            this.$store.commit('loading');
+            this.$http.get(
+                '/article/articleBody', {
+                    articleId: this.id
+                },
+                null
+            ).then((response) => {
+                this.articleBody = response.data;
+                this.$store.commit('loading');
+            })
         }
     }
 </script>

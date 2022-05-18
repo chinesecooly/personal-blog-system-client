@@ -1,6 +1,5 @@
 <template>
-    <v-btn v-show="isShow" dark elevation="5" fab width="55" height="55" fixed right bottom class="mb-15" @click="top"
-        id="top">
+    <v-btn v-show="isShow" dark elevation="5" fab width="55" height="55" fixed right bottom @click="top" id="top">
         <v-icon>mdi-arrow-up-bold</v-icon>
     </v-btn>
 </template>

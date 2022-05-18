@@ -6,10 +6,15 @@
         </v-btn>
         <v-spacer></v-spacer>
         <blog-find></blog-find>
+
         <v-btn rounded class=" mt-0.5 ml-10" icon>
             <v-icon>mdi-bell</v-icon>
         </v-btn>
         <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/editor">
+            <v-icon small>mdi-feather</v-icon>
+            发布文章
+        </v-btn>
+        <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/management">
             <v-icon small>mdi-cog</v-icon>
             文章管理
         </v-btn>

@@ -5,7 +5,7 @@
         </v-col>
         <v-col cols="12" md="9">
             <v-combobox v-model="model" :filter="filter" :hide-no-data="!search" :items="items"
-                :search-input.sync="search" hide-selected label="Search for an option" multiple small-chips solo>
+                :search-input.sync="search" hide-selected label="选择或创建一个标签" multiple small-chips solo>
                 <template v-slot:no-data>
                     <v-list-item>
                         <span class="subheading">Create</span>
@@ -52,7 +52,7 @@
             editing: null,
             editingIndex: -1,
             items: [{
-                header: 'Select an option or create one'
+                header: '选择或创建一个标签'
             }],
             nonce: 1,
             menu: false,

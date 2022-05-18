@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import createPersistedState from "vuex-persistedstate"
 
 Vue.use(Vuex)
 
@@ -11,7 +12,9 @@ export default new Vuex.Store({
       failed: false,
       text: ''
     },
-    loading: false
+    loading: false,
+    user: null,
+    token: null
   },
   getters: {
     baseURL(state) {
@@ -22,6 +25,12 @@ export default new Vuex.Store({
     },
     loading(state) {
       return state.loading;
+    },
+    user(state) {
+      return state.user;
+    },
+    token(state) {
+      return state.token;
     }
   },
   mutations: {
@@ -44,8 +53,26 @@ export default new Vuex.Store({
     },
     loading(state) {
       state.loading = !state.loading;
+    },
+    user(state, user) {
+      state.user = user;
+    },
+    token(state, token) {
+      state.token = token;
     }
   },
   actions: {},
-  modules: {}
+  modules: {},
+  plugins: [
+    createPersistedState({
+      storage: window.localStorage,
+      reducer(state) {
+        return {
+          baseURL: state.baseURL,
+          user: state.user,
+          token: state.token
+        }
+      }
+    })
+  ]
 })

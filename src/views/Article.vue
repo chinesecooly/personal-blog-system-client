@@ -10,10 +10,6 @@
             <v-btn rounded class=" mt-0.5 ml-10" icon>
                 <v-icon>mdi-bell</v-icon>
             </v-btn>
-            <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/editor">
-                <v-icon small>mdi-cog</v-icon>
-                文章管理
-            </v-btn>
             <v-progress-linear :active="$store.getters.loading" :indeterminate="$store.getters.loading" absolute bottom
                 color="deep-purple accent-4">
             </v-progress-linear>
@@ -131,11 +127,12 @@
         <v-row>
             <v-col cols="12" md="2" lg="2">
             </v-col>
-            <v-col md="8" lg="8" style="position:relative;">
+            <v-col md="8" lg="8" style="position:relative;" class="mb-n2">
                 <v-textarea filled auto-grow label="请发表有价值的评论，博客评论不欢迎灌水。" rows="1" row-height="30" color="grey" rounded
                     class="mb-n7" @focus="focus()" v-model="comment" @blur="blur()">
                 </v-textarea>
-                <v-btn :color="color" rounded bottom absolute right width="100" class="mr-2 mb-2" dark>
+                <v-btn :color="color" rounded bottom absolute right width="100" class="mr-2 mb-2" dark
+                    @click="submitComment()">
                     评论
                 </v-btn>
             </v-col>
@@ -147,24 +144,26 @@
             <v-col cols="12" md="2" lg="2">
             </v-col>
             <v-col md="8" lg="8">
-                <comment-card></comment-card>
+                <comment-card v-for="comment,index in comments" :key="index" :comment="comment"></comment-card>
             </v-col>
-            <v-col cols="12" md="2" lg="2">
-
-            </v-col>
+            <v-col cols="12" md="2" lg="2"></v-col>
         </v-row>
+        <blog-user></blog-user>
         <blog-top></blog-top>
+
     </v-container>
 </template>
 <script>
     import BlogFind from "@/components/BlogFind.vue";
     import CommentCard from '@/components/CommentCard.vue';
     import BlogTop from '@/components/BlogTop.vue';
+    import BlogUser from '@/components/BlogUser.vue';
     export default {
         components: {
             BlogFind,
             CommentCard,
             BlogTop,
+            BlogUser,
         },
         data() {
             return {
@@ -178,6 +177,7 @@
                     ['实验室', '/lab']
                 ],
                 comment: '',
+                comments: [],
                 color: 'grey lighten-1',
                 readCount: 0,
                 likeCount: 0,
@@ -186,7 +186,6 @@
                 tags: [],
                 thumbColor: '#707070',
                 starColor: '#707070'
-
             }
         },
         methods: {
@@ -237,6 +236,36 @@
                         null
                     )
                 }
+            },
+            submitComment() {
+                this.$http.post(
+                    '/comment/publishComment', {
+                        articleId: this.$route.params.id,
+                        userId: this.$store.getters.user.id,
+                        body: this.comment
+                    }, null
+                ).then((response) => {
+                    if (response.data.code = "SUCCESS") {
+                        this.getComment()
+                        this.comment = ''
+                        this.commentCount++;
+                        this.$http.get(
+                            '/article/addCommentCount', {
+                                articleId: this.$route.params.id
+                            },
+                            null
+                        )
+                    }
+                })
+            },
+            getComment() {
+                this.$http.get(
+                    '/comment/getCommentByArticleId', {
+                        articleId: this.$route.params.id
+                    }, null
+                ).then((response) => {
+                    this.comments = response.data.data
+                })
             }
         },
         mounted() {
@@ -270,7 +299,8 @@
             ).then((response) => {
                 this.articleBody = response.data;
                 this.$store.commit('loading');
-            })
+            });
+            this.getComment();
         }
     }
 </script>

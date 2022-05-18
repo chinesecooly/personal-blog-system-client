@@ -1,106 +1,112 @@
 <template>
-    <v-container>
-        <v-btn elevation="5" fab dark width="55" height="55" fixed bottom right @click="overlay = !overlay">
-            <v-icon>mdi-account</v-icon>
-        </v-btn>
-        <v-overlay :value="overlay" opacity=".8">
-            <validation-observer ref="observer" v-slot="{ invalid }">
-                <form @submit.prevent="submit">
-                    <validation-provider v-slot="{ errors }" name="Name" rules="required|max:10">
-                        <v-text-field v-model="name" :counter="10" :error-messages="errors" label="昵称" required>
-                        </v-text-field>
-                    </validation-provider>
-                    <validation-provider v-slot="{ errors }" name="email" rules="required|email">
-                        <v-text-field v-model="email" :error-messages="errors" label="邮箱" required>
-                        </v-text-field>
-                    </validation-provider>
-                    <validation-provider v-slot="{ errors }" rules="required" name="checkbox">
-                        <v-checkbox v-model="checkbox" :error-messages="errors" value="1" label="记住昵称和邮箱"
-                            type="checkbox" required></v-checkbox>
-                    </validation-provider>
+    <v-container id="create">
+        <v-speed-dial v-model="fab" bottom right transition="slide-y-reverse-transition">
+            <template v-slot:activator>
+                <v-btn v-model="fab" dark fab>
+                    <v-icon v-if="fab">
+                        mdi-close
+                    </v-icon>
+                    <v-avatar v-else-if="!fab&&($store.getters.user!=null)" size="65" class="mb-2">
+                        <avataaars></avataaars>
+                    </v-avatar>
+                    <v-icon v-else>
+                        mdi-account-alert
+                    </v-icon>
+                </v-btn>
+            </template>
+            <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn fab dark small color="green" v-bind="attrs" v-on="on" @click="$refs.login.activeLogin=true">
+                        <v-icon>mdi-login</v-icon>
+                    </v-btn>
+                </template>
+                <span>登录</span>
+            </v-tooltip>
 
-                    <v-btn class="mr-4" type="submit" :disabled="invalid">
-                        登录
+            <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn fab dark small color="red" v-bind="attrs" v-on="on" @click="logout()">
+                        <v-icon>mdi-logout</v-icon>
                     </v-btn>
-                    <v-btn @click="clear">
-                        关闭
+                </template>
+                <span>注销</span>
+            </v-tooltip>
+
+            <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn fab dark small color="indigo" v-bind="attrs" v-on="on"
+                        @click="$refs.register.activeRegister=true">
+                        <v-icon>mdi-door</v-icon>
                     </v-btn>
-                </form>
-            </validation-observer>
-        </v-overlay>
+                </template>
+                <span>注册</span>
+            </v-tooltip>
+        </v-speed-dial>
+
+        <v-row justify="center">
+            <blog-login ref="login"></blog-login>
+        </v-row>
+        <v-row justify="center">
+            <blog-register ref="register"></blog-register>
+        </v-row>
     </v-container>
 </template>
+
 <script>
-    import {
-        required,
-        digits,
-        email,
-        max,
-        regex
-    } from 'vee-validate/dist/rules'
-    import {
-        extend,
-        ValidationObserver,
-        ValidationProvider,
-        setInteractionMode
-    } from 'vee-validate'
-
-    setInteractionMode('eager')
-
-    extend('digits', {
-        ...digits,
-        message: '{_field_} needs to be {length} digits. ({_value_})',
-    })
-
-    extend('required', {
-        ...required,
-        message: '{_field_} can not be empty',
-    })
-
-    extend('max', {
-        ...max,
-        message: '{_field_} may not be greater than {length} characters',
-    })
-
-    extend('regex', {
-        ...regex,
-        message: '{_field_} {_value_} does not match {regex}',
-    })
-
-    extend('email', {
-        ...email,
-        message: 'Email must be valid',
-    })
+    import Avataaars from 'vuejs-avataaars'
+    import BlogRegister from '@/components/BlogRegister.vue';
+    import BlogLogin from '@/components/BlogLogin.vue';
     export default {
         data: () => ({
-            overlay: false,
-            name: '',
-            email: '',
-            items: [
-                '名称',
-                'Item 2',
-                'Item 3',
-                'Item 4',
-            ],
-            checkbox: null,
+            fab: false
         }),
-        methods: {
-            submit() {
-                this.$refs.observer.validate()
-            },
-            clear() {
-                this.name = ''
-                this.phoneNumber = ''
-                this.email = ''
-                this.select = null
-                this.checkbox = null
-                this.overlay = false;
-                this.$refs.observer.reset()
-            },
-        },
         components: {
-            ValidationObserver,
-            ValidationProvider
+            Avataaars,
+            BlogRegister,
+            BlogLogin
+        },
+        methods: {
+            logout() {
+                this.$http.get(
+                    '/user/logout',
+                    null, {
+                        headers: {
+                            'token': this.$store.getters.token
+                        }
+                    }
+                ).then((response) => {
+                    if (response.data.code == 'SUCCESS') {
+                        this.$store.commit('user', null);
+                        this.$store.commit('token', null);
+                        this.$store.commit("successBlogAlter", response.data.msg)
+                    }
+                    this.$store.commit("failedBlogAlter", response.data.msg)
+                })
+            }
         }
     }
 </script>
+
+<style scoped>
+    #create .v-speed-dial {
+        position: absolute;
+    }
+
+    #create .v-btn--floating {
+        position: relative;
+    }
+
+    .position-relative {
+        position: relative;
+    }
+
+    #create {
+        position: fixed;
+        bottom: 60px;
+        right: 0%;
+        z-index: 1;
+        width: 55px;
+        height: 55px;
+
+    }
+</style>
