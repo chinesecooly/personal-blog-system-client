@@ -24,19 +24,10 @@
             </v-btn>
         </v-col>
         <v-timeline class="mt-10">
-            <v-timeline-item v-for="(message, i) in messages" :key="i" :color="randomColor()" small>
-                <template v-slot:opposite>
-                    <span :class="`headline font-weight-bold ${randomColor()}--text`"
-                        v-text="message.modifiedTime"></span>
-                </template>
-                <div class="py-4">
-                    <h2 :class="`headline font-weight-light mb-4 ${randomColor()}--text`">
-                        {{message.userId}}
-                    </h2>
-                    <div>
-                        {{message.body}}
-                    </div>
-                </div>
+            <v-timeline-item v-for="(message, i) in messages" :key="i" :color="colors[Math.floor(Math.random() * 4)]"
+                small>
+                <span slot="opposite">{{messages[i].modifiedTime}}</span>
+                <message-card :message="message"></message-card>
             </v-timeline-item>
         </v-timeline>
         <blog-user></blog-user>
@@ -47,11 +38,13 @@
     import BlogFind from "@/components/BlogFind.vue";
     import BlogUser from '@/components/BlogUser.vue';
     import Avataaars from 'vuejs-avataaars'
+    import MessageCard from '@/components/MessageCard.vue';
     export default {
         components: {
             BlogUser,
             BlogFind,
-            Avataaars
+            Avataaars,
+            MessageCard
         },
         data: () => ({
             links: [
@@ -61,9 +54,9 @@
                 ['实验室', '/lab']
             ],
             messages: [],
-            messageStyles: [],
             color: 'grey lighten-1',
-            message: ''
+            message: '',
+            colors: ['cyan', 'green', 'pink', 'amber', 'orange']
         }),
         methods: {
             focus() {
@@ -75,6 +68,7 @@
             submitMessage() {
                 this.$http.post('/message/saveMessage', {
                     userId: this.$store.getters.user.id,
+                    username: this.$store.getters.user.name,
                     body: this.message
                 }).then((response) => {
                     if (response.data.code = "SUCCESS") {
@@ -87,9 +81,9 @@
                     }
                 })
             },
-            submitMessageStyle(commentId) {
-                this.$http.post('/message/saveMessageStyle', {
-                    comentId: commentId,
+            submitMessageStyle(messageId) {
+                this.$http.post('/messageStyle/saveMessageStyle', {
+                    messageId: messageId,
                     color: this.randomColor()
                 })
             },
@@ -99,20 +93,13 @@
                     this.messages = response.data.data
                 })
             },
-            getMessageStyles() {
-                this.$http.get('/messageStyle/getMessageStyle',
-                    null, null).then((response) => {
-                    this.messageStyles = response.data.data
-                })
-            },
             randomColor() {
                 let color = ['cyan', 'green', 'pink', 'amber', 'orange'];
-                return color[Math.random() * 5]
+                return color[Math.floor(Math.random() * 4)]
             }
         },
         mounted() {
             this.getMessage();
-            this.getMessageStyles();
         }
 
     }

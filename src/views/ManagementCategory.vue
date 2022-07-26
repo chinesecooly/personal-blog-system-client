@@ -1,38 +1,45 @@
 <template>
+
     <v-simple-table>
         <template v-slot:default>
             <thead>
                 <tr>
                     <th class="text-left">
-                        名称
+                        类别
                     </th>
                     <th class="text-left">
                         操作
                     </th>
+                    <th class="text-left">
+                        设为付费专栏
+                    </th>
+                    <th class="text-left">
+                        是否显示
+                    </th>
+                    <th class="text-left">
+                        文章数
+                    </th>
+                    <th class="text-left">
+                        订阅数
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="category in categories" :key="category.name">
-                    <td>{{ category.body }}</td>
-                    <td>
-                        <v-btn text @click="editor(category.id)">
-                            编辑
-                        </v-btn>
-                        <v-btn text color="red" @click="del(category.id)">
-                            删除
-                        </v-btn>
-                    </td>
-                </tr>
+                <category-bar v-for="category,index in categories" :key="index" :category="category"></category-bar>
             </tbody>
         </template>
     </v-simple-table>
 </template>
 <script>
+    import CategoryBar from '@/components/CategoryBar.vue'
     export default {
         data() {
             return {
                 categories: []
             }
+        },
+        components: {
+            CategoryBar
         },
         methods: {
             getArticleCategory() {
@@ -42,13 +49,8 @@
                 ).then((response) => {
                     this.categories = response.data.data
                 })
-            },
-            editor(id) {
+            }
 
-            },
-            del(id) {
-
-            },
         },
         mounted() {
             this.getArticleCategory();

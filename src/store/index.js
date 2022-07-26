@@ -10,6 +10,7 @@ export default new Vuex.Store({
     blogAlter: {
       success: false,
       failed: false,
+      warning: false,
       text: ''
     },
     loading: false,
@@ -45,11 +46,18 @@ export default new Vuex.Store({
       state.blogAlter.text = text;
       state.blogAlter.failed = true;
     },
+    warningBlogAlter(state, text) {
+      state.blogAlter.text = text;
+      state.blogAlter.warning = true;
+    },
     closeSuccessBlogAlter(state) {
       state.blogAlter.success = false;
     },
     closeFailedBlogAlter(state) {
       state.blogAlter.failed = false;
+    },
+    closeWarningBlogAlter(state) {
+      state.blogAlter.warning = false;
     },
     loading(state) {
       state.loading = !state.loading;

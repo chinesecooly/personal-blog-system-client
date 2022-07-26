@@ -9,7 +9,7 @@
                 outlined :suffix="titleSuffix" color="grep" :error="titleError" autofocus @blur="blur()"
                 @focus="focus()" @input="input">
             </v-text-field>
-            <v-btn rounded class="ml-4" outlined color="red" @click="savedraft()">保存草稿</v-btn>
+            <v-btn rounded class="ml-4" outlined color="red" @click="saveDraft()">保存草稿</v-btn>
             <v-btn rounded class="ml-4" color="red" @click=" activeDialog()">发布文章</v-btn>
         </v-toolbar>
         <v-divider></v-divider>
@@ -148,7 +148,7 @@
             savePublishInfo() {
                 this.dialog = !this.dialog
             },
-            savedraft() {
+            saveDraft() {
                 this.$axios({
                     method: 'post',
                     url: '/article/saveMdByURL',
@@ -161,6 +161,13 @@
                 }).then((response) => {
                     if (response.data.code == "SUCCESS") {
                         this.$store.commit('successBlogAlter', response.data.msg);
+                        this.$http.get('/article/saveDraft', {
+                            id: this.id
+                        }, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            },
+                        })
                     } else {
                         this.$store.commit('failedBlogAlter', response.data.msg);
                     }

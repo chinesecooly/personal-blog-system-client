@@ -20,24 +20,44 @@
                             <v-spacer></v-spacer>
                             <v-tooltip top>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn icon :color="thumbColor" v-bind="attrs" v-on="on" @click="thumb()">
-                                        <v-icon>mdi-thumb-up</v-icon>
+                                    <v-btn text :color="thumbColor" v-bind="attrs" v-on="on" @click="thumb()">
+                                        <v-icon>mdi-thumb-up</v-icon>{{commt==null?comment.likeCount:commt.likeCount}}
                                     </v-btn>
                                 </template>
                                 <span>点赞</span>
                             </v-tooltip>
 
-                            {{commt==null?comment.likeCount:commt.likeCount}}
-
                             <v-tooltip top>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn icon v-bind="attrs" v-on="on" class="ml-4" @click="showReply()">
-                                        <v-icon>mdi-comment-processing</v-icon>
+                                    <v-btn text v-bind="attrs" v-on="on" class="ml-4" @click="showReply()">
+                                        <v-icon>mdi-comment-processing</v-icon>{{comment.replyCount}}
                                     </v-btn>
                                 </template>
                                 <span>回复</span>
                             </v-tooltip>
-                            {{comment.replyCount}}
+
+
+                            <v-dialog v-model="deleted" persistent max-width="290">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn text v-bind="attrs" v-on="on" class="ml-4" color="red" v-show="isManagement">
+                                        <v-icon>mdi-delete</v-icon>删除
+                                    </v-btn>
+                                </template>
+                                <v-card>
+                                    <v-col cols="12">
+                                        此操作将删除该评论的所有回复，确认继续吗？
+                                    </v-col>
+                                    <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="green darken-1" text @click="deleted = false">
+                                            取消
+                                        </v-btn>
+                                        <v-btn color="green darken-1" text @click="deleteComment()">
+                                            确认
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-dialog>
                         </v-card-title>
                     </v-card>
                     <v-expand-transition>
@@ -53,7 +73,8 @@
                             </v-col>
                         </v-card>
                     </v-expand-transition>
-                    <comment-card v-for="reply,index in replies" :key="index" :comment="reply"></comment-card>
+                    <comment-card v-for="reply,index in replies" :key="index" :comment="reply" :articleId="articleId"
+                        :isManagement="isManagement" @refreshComment="getReplies()"></comment-card>
                 </v-row>
                 <v-divider></v-divider>
             </v-col>
@@ -65,7 +86,9 @@
     export default {
         name: 'commentCard',
         props: {
-            comment: null
+            comment: null,
+            articleId: null,
+            isManagement: false
         },
         data() {
             return {
@@ -75,7 +98,8 @@
                 reply: '',
                 flag: false,
                 color: 'grey lighten-1',
-                replies: []
+                replies: [],
+                deleted: false
             }
         },
         methods: {
@@ -121,7 +145,7 @@
             submitReply() {
                 this.$http.post(
                     '/comment/publishComment', {
-                        articleId: this.$route.params.id,
+                        articleId: this.articleId == null ? this.$route.params.id : this.articleId,
                         userId: this.$store.getters.user.id,
                         fatherId: this.comment.id,
                         body: this.reply,
@@ -147,6 +171,16 @@
                     articleId: this.commt.articleId
                 }, null).then((response) => {
                     this.replies = response.data.data
+                })
+            },
+            deleteComment() {
+                this.deleted = false
+                this.$http.get('/comment/removeCommentByCommentId', {
+                    commentId: this.comment.id
+                }, null).then((response) => {
+                    this.$emit("refreshComment");
+                    this.getReplies()
+                    this.$store.commit("successBlogAlter", response.data.msg)
                 })
             }
         },

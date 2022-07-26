@@ -10,7 +10,7 @@ import 'mavon-editor/dist/css/index.css'
 Vue.config.productionTip = false
 Vue.use(VueAxiosPlugin, {
   baseURL: 'http://localhost:8000',
-  timeout: 10000
+  timeout: 50000
 })
 Vue.use(mavonEditor)
 store.commit('baseURL', 'http://localhost:8000')

@@ -10,11 +10,13 @@
         <v-btn rounded class=" mt-0.5 ml-10" icon>
             <v-icon>mdi-bell</v-icon>
         </v-btn>
-        <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/editor">
+        <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/editor"
+            v-show="$store.getters.user!=null&&$store.getters.user.role.name=='管理员'">
             <v-icon small>mdi-feather</v-icon>
             发布文章
         </v-btn>
-        <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/management">
+        <v-btn rounded color="red" class=" mt-0.5 ml-10" to="/management"
+            v-show="$store.getters.user!=null&&$store.getters.user.role.name=='管理员'">
             <v-icon small>mdi-cog</v-icon>
             文章管理
         </v-btn>

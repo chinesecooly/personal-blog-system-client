@@ -68,16 +68,18 @@
 
         <v-app-bar app dark>
             <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-            <v-toolbar-title>个人博客后台管理系统</v-toolbar-title>
+            <v-toolbar-title>个人博客管理系统</v-toolbar-title>
         </v-app-bar>
         <v-progress-linear :active="$store.getters.loading" :indeterminate="$store.getters.loading" absolute bottom
             color="deep-purple accent-4">
         </v-progress-linear>
+        <blog-user></blog-user>
         <router-view></router-view>
     </v-container>
 </template>
 
 <script>
+    import BlogUser from '@/components/BlogUser.vue'
     export default {
         data: () => ({
             drawer: true,
@@ -88,6 +90,9 @@
                 this.drawer = false
             },
         },
+        components: {
+            BlogUser
+        }
     }
 </script>
 <style scoped>

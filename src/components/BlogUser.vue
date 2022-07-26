@@ -7,7 +7,7 @@
                         mdi-close
                     </v-icon>
                     <v-avatar v-else-if="!fab&&($store.getters.user!=null)" size="65" class="mb-2">
-                        <avataaars></avataaars>
+                        <blog-avatar :selected="false" ref="avatar"></blog-avatar>
                     </v-avatar>
                     <v-icon v-else>
                         mdi-account-alert
@@ -44,7 +44,7 @@
         </v-speed-dial>
 
         <v-row justify="center">
-            <blog-login ref="login"></blog-login>
+            <blog-login ref="login" @login="getAvatarByUserId()"></blog-login>
         </v-row>
         <v-row justify="center">
             <blog-register ref="register"></blog-register>
@@ -56,6 +56,7 @@
     import Avataaars from 'vuejs-avataaars'
     import BlogRegister from '@/components/BlogRegister.vue';
     import BlogLogin from '@/components/BlogLogin.vue';
+    import BlogAvatar from './BlogAvatar.vue';
     export default {
         data: () => ({
             fab: false
@@ -63,25 +64,36 @@
         components: {
             Avataaars,
             BlogRegister,
-            BlogLogin
+            BlogLogin,
+            BlogAvatar
         },
         methods: {
             logout() {
-                this.$http.get(
-                    '/user/logout',
-                    null, {
-                        headers: {
-                            'token': this.$store.getters.token
+                if (this.$store.getters.user == null) {
+                    this.$store.commit("warningBlogAlter", '尚未登录，请先登录')
+                } else {
+                    this.$http.get(
+                        '/user/logout',
+                        null, {
+                            headers: {
+                                'token': this.$store.getters.token
+                            }
                         }
-                    }
-                ).then((response) => {
-                    if (response.data.code == 'SUCCESS') {
-                        this.$store.commit('user', null);
-                        this.$store.commit('token', null);
-                        this.$store.commit("successBlogAlter", response.data.msg)
-                    }
-                    this.$store.commit("failedBlogAlter", response.data.msg)
-                })
+                    ).then((response) => {
+                        if (response.data.code == 'SUCCESS') {
+                            this.$store.commit('user', null);
+                            this.$store.commit('token', null);
+                            this.$store.commit("successBlogAlter", response.data.msg)
+                        } else {
+                            this.$store.commit('user', null)
+                            this.$store.commit('token', '')
+                            this.$store.commit("warningBlogAlter", response.data.msg)
+                        }
+                    })
+                }
+            },
+            getAvatarByUserId() {
+                this.$refs.avatar.getAvatarByUserId(this.$store.getters.user.id)
             }
         }
     }

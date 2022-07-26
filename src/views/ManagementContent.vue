@@ -127,48 +127,32 @@
             },
             sysALL() {
                 this.$http.get(
-                    '/sysArticle/sysAll',
-                    null, {
-                        headers: {
-                            'token': this.$store.getters.token
-                        }
-                    }
+                    '/article/sysAll',
+                    null, null
                 ).then((response) => {
                     this.items[0].content = response.data.data;
                 })
             },
             sysArticle() {
                 this.$http.get(
-                    '/sysArticle/sysArticle',
-                    null, {
-                        headers: {
-                            'token': this.$store.getters.token
-                        }
-                    }
+                    '/article/sysArticle',
+                    null, null
                 ).then((response) => {
                     this.items[1].content = response.data.data;
                 })
             },
             sysDraft() {
                 this.$http.get(
-                    '/sysArticle/sysDraft',
-                    null, {
-                        headers: {
-                            'token': this.$store.getters.token
-                        }
-                    }
+                    '/article/sysDraft',
+                    null, null
                 ).then((response) => {
                     this.items[2].content = response.data.data;
                 })
             },
             sysRecycle() {
                 this.$http.get(
-                    '/sysArticle/sysRecycle',
-                    null, {
-                        headers: {
-                            'token': this.$store.getters.token
-                        }
-                    }
+                    '/article/sysRecycle',
+                    null, null
                 ).then((response) => {
                     this.items[3].content = response.data.data;
                 })
@@ -177,6 +161,10 @@
 
             },
             deleteArticle(id) {
+                if (this.$store.getters.user == null) {
+                    this.$store.commit("failedBlogAlter", '尚未登陆,请先登录')
+                    return;
+                }
                 this.$http.get(
                     '/sysArticle/sysDeleteById', {
                         id: id
@@ -186,16 +174,28 @@
                         }
                     }
                 ).then((response) => {
-                    if (response.data.code = "SUCCESS") {
+                    if (response.data.code == "SUCCESS") {
                         this.$store.commit("successBlogAlter", response.data.msg)
                         this.sysALL()
                         this.sysArticle()
                         this.sysDraft()
                         this.sysRecycle()
+                    } else {
+                        this.$store.commit("failedBlogAlter", response.data.msg)
+                        if (response.data.code == "LOGIN_TIMEOUT") {
+                            this.$store.commit("user", null);
+                            this.$store.commit("token", '');
+                            console.log('user', this.$store.getters.user);
+                        }
                     }
                 })
             },
             recoverArticle(id) {
+                if (this.$store.getters.user == null) {
+                    this.$store.commit("failedBlogAlter", '尚未登陆,请先登录')
+                    return;
+                }
+                this
                 this.$http.get(
                     '/sysArticle/recoverArticleById', {
                         id: id
@@ -205,17 +205,28 @@
                         }
                     }
                 ).then((response) => {
-                    if (response.data.code = "SUCCESS") {
+                    if (response.data.code == "SUCCESS") {
                         this.$store.commit("successBlogAlter", response.data.msg)
                         this.sysALL()
                         this.sysArticle()
                         this.sysDraft()
                         this.sysRecycle()
+                    } else {
+                        this.$store.commit("failedBlogAlter", response.data.msg)
+                        if (response.data.code == "LOGIN_TIMEOUT") {
+                            this.$store.commit("user", null);
+                            this.$store.commit("token", '');
+                            console.log('user', this.$store.getters.user);
+                        }
                     }
                 })
             },
 
             thoroughDeleteArticle(id) {
+                if (this.$store.getters.user == null) {
+                    this.$store.commit("failedBlogAlter", '尚未登陆，请先登录')
+                    return;
+                }
                 this.$http.get(
                     '/sysArticle/sysThoroughDeleteById', {
                         id: id
@@ -225,9 +236,16 @@
                         }
                     }
                 ).then((response) => {
-                    if (response.data.code = "SUCCESS") {
+                    if (response.data.code == "SUCCESS") {
                         this.$store.commit("successBlogAlter", response.data.msg)
                         this.sysRecycle()
+                    } else {
+                        this.$store.commit("failedBlogAlter", response.data.msg)
+                        if (response.data.code == "LOGIN_TIMEOUT") {
+                            this.$store.commit("user", null);
+                            this.$store.commit("token", '')
+                            console.log('user', this.$store.getters.user);
+                        }
                     }
                 })
             },
